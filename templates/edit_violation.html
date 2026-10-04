@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Violation #{{ violation.id }} - Smart Traffic Violation Logger{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3 border-bottom d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-pencil-square text-primary fs-4 me-2"></i>
+                    <div>
+                        <h5 class="mb-0 fw-bold text-dark">Edit Violation Record</h5>
+                        <small class="text-muted">Challan ID: <strong>#{{ violation.id }}</strong></small>
+                    </div>
+                </div>
+                <a href="{{ url_for('history') }}" class="btn btn-sm btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-1"></i> Back to History
+                </a>
+            </div>
+
+            <div class="card-body p-4">
+                <form method="POST" action="{{ url_for('edit_violation', id=violation.id) }}" novalidate>
+                    <div class="row g-3">
+                        <!-- Vehicle Number -->
+                        <div class="col-md-6">
+                            <label for="vehicle_number" class="form-label">
+                                <i class="bi bi-car-front-fill me-1 text-primary"></i> Vehicle Registration Number <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control text-uppercase" id="vehicle_number" name="vehicle_number" 
+                                   value="{{ violation.vehicle_number }}" required>
+                        </div>
+
+                        <!-- Violation Type -->
+                        <div class="col-md-6">
+                            <label for="violation_type" class="form-label">
+                                <i class="bi bi-exclamation-triangle-fill me-1 text-warning"></i> Violation Type <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select" id="violation_type" name="violation_type" required>
+                                {% for vtype in ["No Helmet", "Overspeeding", "Signal Violation", "No Seat Belt", "Wrong Parking", "Drunk and Driving", "Triple Riding", "Using Mobile While Driving"] %}
+                                    <option value="{{ vtype }}" {% if violation.violation_type == vtype %}selected{% endif %}>{{ vtype }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Location -->
+                        <div class="col-md-6">
+                            <label for="location" class="form-label">
+                                <i class="bi bi-geo-alt-fill me-1 text-danger"></i> Offense Location <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control" id="location" name="location" 
+                                   value="{{ violation.location }}" required>
+                        </div>
+
+                        <!-- Date -->
+                        <div class="col-md-6">
+                            <label for="violation_date" class="form-label">
+                                <i class="bi bi-calendar-event me-1 text-info"></i> Violation Date <span class="text-danger">*</span>
+                            </label>
+                            <input type="date" class="form-control" id="violation_date" name="violation_date" 
+                                   value="{{ violation.violation_date }}" required>
+                        </div>
+
+                        <!-- Fine Amount -->
+                        <div class="col-md-6">
+                            <label for="fine_amount" class="form-label">
+                                <i class="bi bi-currency-rupee me-1 text-success"></i> Fine Amount (₹) <span class="text-danger">*</span>
+                            </label>
+                            <input type="number" class="form-control" id="fine_amount" name="fine_amount" 
+                                   value="{{ violation.fine_amount }}" min="1" step="1" required>
+                        </div>
+
+                        <!-- Status Selection -->
+                        <div class="col-md-6">
+                            <label for="status" class="form-label">
+                                <i class="bi bi-check2-circle me-1 text-primary"></i> Payment Status <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select" id="status" name="status" required>
+                                <option value="Unpaid" {% if violation.status == 'Unpaid' %}selected{% endif %}>Unpaid</option>
+                                <option value="Paid" {% if violation.status == 'Paid' %}selected{% endif %}>Paid</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('history') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle me-1"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary px-4 shadow-sm">
+                            <i class="bi bi-check-lg me-1"></i> Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block title %}Public Challan Status - Smart Traffic Violation Logger{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-7 col-lg-6">
+        {% if violation %}
+            <!-- Valid Challan Status Card -->
+            <div class="card shadow-sm border-0 public-status-card">
+                <div class="card-header bg-white py-3 text-center border-bottom">
+                    <span class="badge bg-primary text-uppercase px-3 py-1 mb-2">Public Verification Portal</span>
+                    <h4 class="fw-bold mb-0 text-dark">Traffic Violation Status</h4>
+                    <p class="text-muted small mb-0">Official Electronic Record (Read-Only)</p>
+                </div>
+
+                <div class="card-body p-4">
+                    <div class="text-center mb-4">
+                        <div class="small text-muted text-uppercase fw-semibold">Challan ID</div>
+                        <h3 class="fw-bold text-primary">#ECH-{{ '%06d' % violation.id }}</h3>
+                        
+                        <div class="mt-2">
+                            {% if violation.status == 'Paid' %}
+                                <span class="badge-paid fs-6 px-3 py-2">
+                                    <i class="bi bi-check-circle-fill me-1"></i> Payment Status: PAID
+                                </span>
+                            {% else %}
+                                <span class="badge-unpaid fs-6 px-3 py-2">
+                                    <i class="bi bi-exclamation-circle-fill me-1"></i> Payment Status: UNPAID
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="bg-light p-3 rounded-3 mb-3">
+                        <div class="row py-2 border-bottom">
+                            <div class="col-5 text-muted fw-semibold">
+                                <i class="bi bi-car-front me-1 text-primary"></i> Vehicle Number
+                            </div>
+                            <div class="col-7 text-end fw-bold text-dark fs-6">
+                                {{ violation.vehicle_number }}
+                            </div>
+                        </div>
+
+                        <div class="row py-2 border-bottom">
+                            <div class="col-5 text-muted fw-semibold">
+                                <i class="bi bi-exclamation-triangle me-1 text-warning"></i> Violation Type
+                            </div>
+                            <div class="col-7 text-end fw-semibold text-dark">
+                                {{ violation.violation_type }}
+                            </div>
+                        </div>
+
+                        <div class="row py-2 border-bottom">
+                            <div class="col-5 text-muted fw-semibold">
+                                <i class="bi bi-geo-alt me-1 text-danger"></i> Location
+                            </div>
+                            <div class="col-7 text-end text-dark">
+                                {{ violation.location }}
+                            </div>
+                        </div>
+
+                        <div class="row py-2 border-bottom">
+                            <div class="col-5 text-muted fw-semibold">
+                                <i class="bi bi-calendar-event me-1 text-info"></i> Date
+                            </div>
+                            <div class="col-7 text-end text-dark">
+                                {{ violation.violation_date }}
+                            </div>
+                        </div>
+
+                        <div class="row py-2">
+                            <div class="col-5 text-muted fw-semibold">
+                                <i class="bi bi-cash-stack me-1 text-success"></i> Fine Amount
+                            </div>
+                            <div class="col-7 text-end fw-bold text-success fs-5">
+                                ₹{{ violation.fine_amount }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-secondary text-center small mb-0 py-2">
+                        <i class="bi bi-lock-fill me-1 text-muted"></i>
+                        This page is read-only. For disputes or official payment processing, contact your local traffic department.
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <!-- Invalid Challan Notice -->
+            <div class="card shadow-sm border-0 mt-4 text-center">
+                <div class="card-body p-5">
+                    <div class="mb-3">
+                        <i class="bi bi-x-octagon-fill text-danger display-3"></i>
+                    </div>
+                    <h3 class="fw-bold text-dark">Invalid or unavailable challan.</h3>
+                    <p class="text-muted mt-2">
+                        The requested traffic violation record could not be found or has been removed from the system.
+                    </p>
+                    <div class="mt-4">
+                        <a href="{{ url_for('login') }}" class="btn btn-outline-primary">
+                            <i class="bi bi-shield-lock me-1"></i> Officer Portal
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

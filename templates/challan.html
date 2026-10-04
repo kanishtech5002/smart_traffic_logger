@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block title %}Challan #{{ violation.id }} - Smart Traffic Violation Logger{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <!-- Action Buttons (Hidden when printing) -->
+        <div class="d-flex justify-content-between align-items-center mb-3 btn-print-hide">
+            <a href="{{ url_for('history') }}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i> Back to History
+            </a>
+            <div class="d-flex gap-2">
+                {% if violation.status == 'Unpaid' %}
+                <a href="{{ url_for('mark_paid', id=violation.id) }}" class="btn btn-success">
+                    <i class="bi bi-check2-circle me-1"></i> Mark as Paid
+                </a>
+                {% endif %}
+                <button type="button" onclick="window.print()" class="btn btn-primary">
+                    <i class="bi bi-printer-fill me-1"></i> Print Challan
+                </button>
+            </div>
+        </div>
+
+        <!-- Printable Challan Receipt Card -->
+        <div class="challan-container">
+            <div class="challan-header">
+                <div class="d-flex justify-content-center align-items-center mb-1">
+                    <i class="bi bi-shield-fill-check fs-3 me-2"></i>
+                    <h3 class="text-uppercase mb-0">Smart Traffic Violation Logger</h3>
+                </div>
+                <p>E-Challan Official Traffic Penalty Receipt</p>
+            </div>
+
+            <div class="challan-body">
+                <div class="text-center mb-4 pb-2 border-bottom">
+                    <span class="text-muted text-uppercase small fw-bold">Challan Reference ID</span>
+                    <h4 class="fw-bold text-dark mt-1">#ECH-{{ '%06d' % violation.id }}</h4>
+                </div>
+
+                <div class="challan-row">
+                    <span class="challan-label"><i class="bi bi-car-front me-2 text-primary"></i>Vehicle Number</span>
+                    <span class="challan-value fs-5 fw-bold text-dark">{{ violation.vehicle_number }}</span>
+                </div>
+
+                <div class="challan-row">
+                    <span class="challan-label"><i class="bi bi-exclamation-diamond me-2 text-warning"></i>Violation Type</span>
+                    <span class="challan-value">{{ violation.violation_type }}</span>
+                </div>
+
+                <div class="challan-row">
+                    <span class="challan-label"><i class="bi bi-geo-alt me-2 text-danger"></i>Location</span>
+                    <span class="challan-value">{{ violation.location }}</span>
+                </div>
+
+                <div class="challan-row">
+                    <span class="challan-label"><i class="bi bi-calendar-check me-2 text-info"></i>Date of Offense</span>
+                    <span class="challan-value">{{ violation.violation_date }}</span>
+                </div>
+
+                <div class="challan-row">
+                    <span class="challan-label"><i class="bi bi-cash-coin me-2 text-success"></i>Fine Amount</span>
+                    <span class="challan-value fs-5 fw-bold text-success">₹{{ violation.fine_amount }}</span>
+                </div>
+
+                <div class="challan-row align-items-center">
+                    <span class="challan-label"><i class="bi bi-patch-check me-2 text-primary"></i>Payment Status</span>
+                    <span class="challan-value">
+                        {% if violation.status == 'Paid' %}
+                            <span class="badge-paid"><i class="bi bi-check-circle me-1"></i>PAID</span>
+                        {% else %}
+                            <span class="badge-unpaid"><i class="bi bi-hourglass-split me-1"></i>UNPAID</span>
+                        {% endif %}
+                    </span>
+                </div>
+
+                <!-- QR Code Box -->
+                <div class="challan-qr-box">
+                    <h6 class="fw-bold text-muted text-uppercase small mb-2">Scan for Live Public Status Verification</h6>
+                    <img src="{{ url_for('static', filename='qr_codes/' ~ qr_filename) }}" 
+                         alt="QR Code for Challan #{{ violation.id }}" 
+                         class="challan-qr-img shadow-sm mb-2">
+                    <div class="small text-muted mt-1">
+                        Public Verification URL:<br>
+                        <a href="{{ status_url }}" target="_blank" class="text-decoration-none fw-semibold">
+                            {{ status_url }}
+                        </a>
+                    </div>
+                </div>
+
+                <div class="challan-footer-note">
+                    <i class="bi bi-info-circle me-1"></i>
+                    This is an electronically generated traffic violation notice under the Motor Vehicles Act.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

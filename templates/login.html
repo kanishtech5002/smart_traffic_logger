@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Officer Login - Smart Traffic Violation Logger{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-4">
+    <div class="col-md-6 col-lg-5">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-primary text-white text-center py-3">
+                <i class="bi bi-shield-lock-fill fs-2 mb-2 d-block text-warning"></i>
+                <h4 class="mb-0 fw-bold">Officer Portal Login</h4>
+                <small class="text-white-50">Authorized Personnel Only</small>
+            </div>
+            <div class="card-body p-4">
+                <div class="alert alert-info py-2 px-3 small d-flex align-items-center mb-3">
+                    <i class="bi bi-info-circle-fill me-2 fs-5"></i>
+                    <div>
+                        <strong>Demo Credentials:</strong><br>
+                        Username: <code>KXNISH</code><br>
+                        Password: <code>traffic123</code>
+                    </div>
+                </div>
+
+                <form method="POST" action="{{ url_for('login') }}">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">
+                            <i class="bi bi-person me-1"></i> Officer Username
+                        </label>
+                        <input type="text" class="form-control" id="username" name="username" 
+                               placeholder="Enter username" required autofocus>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="password" class="form-label">
+                            <i class="bi bi-key me-1"></i> Password
+                        </label>
+                        <input type="password" class="form-control" id="password" name="password" 
+                               placeholder="Enter password" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
+                        <i class="bi bi-box-arrow-in-right me-1"></i> Login to System
+                    </button>
+                </form>
+            </div>
+            <div class="card-footer text-center bg-light py-2 text-muted small">
+                Public citizen checking challan status? No login required.
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

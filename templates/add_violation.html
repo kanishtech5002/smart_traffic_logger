@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block title %}Add Traffic Violation - Smart Traffic Violation Logger{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3 border-bottom d-flex align-items-center">
+                <i class="bi bi-shield-plus text-primary fs-4 me-2"></i>
+                <div>
+                    <h5 class="mb-0 fw-bold text-dark">Log New Traffic Violation</h5>
+                    <small class="text-muted">Enter details of observed offense. Status will default to <strong>Unpaid</strong>.</small>
+                </div>
+            </div>
+
+            <div class="card-body p-4">
+                <form method="POST" action="{{ url_for('add_violation') }}" novalidate>
+                    <div class="row g-3">
+                        <!-- Vehicle Number -->
+                        <div class="col-md-6">
+                            <label for="vehicle_number" class="form-label">
+                                <i class="bi bi-car-front-fill me-1 text-primary"></i> Vehicle Registration Number <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control text-uppercase" id="vehicle_number" name="vehicle_number" 
+                                   placeholder="e.g. TN30AB1234" required 
+                                   pattern="[A-Za-z0-9\s-]+" 
+                                   title="Please enter a valid vehicle number"
+                                   value="{{ request.form.get('vehicle_number', '') }}" autofocus>
+                            <div class="form-text">Alphabets and numbers only (auto-converted to uppercase).</div>
+                        </div>
+
+                        <!-- Violation Type -->
+                        <div class="col-md-6">
+                            <label for="violation_type" class="form-label">
+                                <i class="bi bi-exclamation-triangle-fill me-1 text-warning"></i> Violation Type <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select" id="violation_type" name="violation_type" required>
+                                <option value="" disabled selected>-- Select Violation Type --</option>
+                                <option value="No Helmet" {% if request.form.get('violation_type') == 'No Helmet' %}selected{% endif %}>No Helmet</option>
+                                <option value="Overspeeding" {% if request.form.get('violation_type') == 'Overspeeding' %}selected{% endif %}>Overspeeding</option>
+                                <option value="Signal Violation" {% if request.form.get('violation_type') == 'Signal Violation' %}selected{% endif %}>Signal Violation</option>
+                                <option value="No Seat Belt" {% if request.form.get('violation_type') == 'No Seat Belt' %}selected{% endif %}>No Seat Belt</option>
+                                <option value="Wrong Parking" {% if request.form.get('violation_type') == 'Wrong Parking' %}selected{% endif %}>Wrong Parking</option>
+                                <option value="Drunk and Driving" {% if request.form.get('violation_type') == 'Drunk and Driving' %}selected{% endif %}>Drunk and Driving</option>
+                                <option value="Triple Riding" {% if request.form.get('violation_type') == 'Triple Riding' %}selected{% endif %}>Triple Riding</option>
+                                <option value="Using Mobile While Driving" {% if request.form.get('violation_type') == 'Using Mobile While Driving' %}selected{% endif %}>Using Mobile While Driving</option>
+                            </select>
+                        </div>
+
+                        <!-- Location -->
+                        <div class="col-md-6">
+                            <label for="location" class="form-label">
+                                <i class="bi bi-geo-alt-fill me-1 text-danger"></i> Offense Location <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control" id="location" name="location" 
+                                   placeholder="e.g. Salem, Main Junction" required
+                                   value="{{ request.form.get('location', '') }}">
+                        </div>
+
+                        <!-- Date -->
+                        <div class="col-md-6">
+                            <label for="violation_date" class="form-label">
+                                <i class="bi bi-calendar-event me-1 text-info"></i> Violation Date <span class="text-danger">*</span>
+                            </label>
+                            <input type="date" class="form-control" id="violation_date" name="violation_date" 
+                                   value="{{ request.form.get('violation_date', today_date) }}" required>
+                        </div>
+
+                        <!-- Fine Amount -->
+                        <div class="col-md-6">
+                            <label for="fine_amount" class="form-label">
+                                <i class="bi bi-currency-rupee me-1 text-success"></i> Fine Amount (₹) <span class="text-danger">*</span>
+                            </label>
+                            <input type="number" class="form-control" id="fine_amount" name="fine_amount" 
+                                   placeholder="e.g. 1000" min="1" step="1" required
+                                   value="{{ request.form.get('fine_amount', '') }}">
+                            <div class="form-text">Must be a valid positive amount.</div>
+                        </div>
+
+                        <!-- Initial Status Notice -->
+                        <div class="col-md-6">
+                            <label class="form-label text-muted">
+                                <i class="bi bi-info-circle me-1"></i> Initial Payment Status
+                            </label>
+                            <div class="input-group">
+                                <span class="form-control bg-light text-muted">
+                                    <span class="badge-unpaid"><i class="bi bi-hourglass-split me-1"></i>Unpaid (Automatic)</span>
+                                </span>
+                            </div>
+                            <div class="form-text">All newly issued challans are logged as Unpaid.</div>
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle me-1"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary px-4 shadow-sm">
+                            <i class="bi bi-save me-1"></i> Save & Generate Challan
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
