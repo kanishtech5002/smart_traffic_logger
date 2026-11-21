@@ -77,7 +77,7 @@
                 <!-- QR Code Box -->
                 <div class="challan-qr-box">
                     <h6 class="fw-bold text-muted text-uppercase small mb-2">Scan for Live Public Status Verification</h6>
-                    <img src="{{ url_for('static', filename='qr_codes/' ~ qr_filename) }}" 
+                    <img src="{{ url_for('serve_qr_code', filename=qr_filename) }}" 
                          alt="QR Code for Challan #{{ violation.id }}" 
                          class="challan-qr-img shadow-sm mb-2">
                     <div class="small text-muted mt-1">

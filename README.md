@@ -27,7 +27,7 @@ Traditional paper-based traffic ticketing is slow, prone to data loss, and diffi
 * **Update Payment Status (Update)**: Single-click `Mark as Paid` action that immediately updates the database and reflects in the UI and QR verification page.
 * **Full CRUD Support**: Complete Create, Read, Update (edit details), and Delete operations (with safety confirmation modal).
 * **Digital Printable Challan**: Generates an official, print-friendly e-challan receipt with vehicle details, penalty information, and browser `Print Challan` functionality.
-* **Dynamic QR Code Generation**: Automatically creates a QR code image saved under `static/qr_codes/challan_<id>.png` containing the URL to the public verification page.
+* **Dynamic QR Code Generation**: Automatically creates a QR code image saved under `/tmp/qr_codes/challan_<id>.png` (Vercel serverless compatible) containing the URL to the public verification page.
 * **Public Status Page**: Accessible at `/status/<violation_id>` without officer credentials. Read-only view for citizens; safely rejects non-existent challans with `"Invalid or unavailable challan."`
 * **Officer Authentication (Security)**: Flask session-based login protecting all management routes, ensuring only authorized personnel can alter violation data.
 
@@ -202,7 +202,7 @@ Edit / Delete / Mark as Paid       Read-Only Violation & Payment Info
 > **Answer:** SQLAlchemy translates Python classes and objects into SQL statements. It prevents SQL injection attacks through automatic parameter binding, improves code readability, eliminates manual cursor handling, and allows easy migration between database engines if needed.
 
 ### Q2: How does the QR code work in this project?
-> **Answer:** When an officer logs a violation, the backend uses Python's `qrcode` library to encode the absolute URL of the public status page (`/status/<id>`). The resulting image is saved in `static/qr_codes/challan_<id>.png`. When scanned by a phone camera, it directs the browser to the public status page.
+> **Answer:** When an officer logs a violation, the backend uses Python's `qrcode` library to encode the absolute URL of the public status page (`/status/<id>`). The resulting image is saved in `/tmp/qr_codes/challan_<id>.png` (safe for serverless/Vercel read-only filesystems) and served securely via the `/qr_codes/<filename>` route. When scanned by a phone camera, it directs the browser to the public status page.
 
 ### Q3: Why is the `/status/<id>` route public while other routes are protected?
 > **Answer:** Citizens receiving a physical or digital challan need to verify their ticket without having police department credentials. The public route is strictly read-only, preventing any unauthorized modification or deletion of records.
@@ -219,9 +219,9 @@ Edit / Delete / Mark as Paid       Read-Only Violation & Payment Info
 
 1. **`ModuleNotFoundError: No module named 'flask'`**
    - Solution: Activate your virtual environment and run `pip install -r requirements.txt`.
-2. **`OperationalError: unable to open database file`**
-   - Solution: Ensure the `instance/` directory exists and has write permissions. `app.py` automatically creates it using `os.makedirs(app.instance_path, exist_ok=True)`.
+2. **`OperationalError: unable to open database file` or Read-Only Filesystem on Vercel**
+   - Solution: The application automatically detects Vercel serverless environments and uses writable `/tmp/traffic.db` and `/tmp/qr_codes`.
 3. **QR Code image not showing on challan**
-   - Solution: Ensure the `static/qr_codes/` directory exists. The application automatically re-generates missing QR codes upon accessing the challan route.
+   - Solution: Ensure the `QR_FOLDER` directory exists. The application automatically generates missing QR codes upon accessing the challan route or QR serving endpoint.
 4. **Port 5000 is already in use**
    - Solution: Change the port in `app.run(port=5001)` or terminate the process occupying port 5000.

@@ -2,7 +2,7 @@ import os
 from datetime import datetime
 from functools import wraps
 from flask import (
-    Flask, render_template, request, redirect, url_for, flash, session, abort
+    Flask, render_template, request, redirect, url_for, flash, session, abort, send_from_directory
 )
 from flask_sqlalchemy import SQLAlchemy
 import qrcode
@@ -11,17 +11,44 @@ import qrcode
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'smart_traffic_enforcement_secret_key_2026'
 
-# Configure SQLite Database in the instance directory
-os.makedirs(app.instance_path, exist_ok=True)
-db_path = os.path.join(app.instance_path, 'traffic.db')
+# Configure SQLite Database
+# In serverless/read-only environments (such as Vercel), the project root is read-only.
+# We ensure the database directory is writable by using /tmp when in Vercel or read-only mode.
+IS_SERVERLESS = bool(os.environ.get('VERCEL') or not os.access(os.path.dirname(os.path.abspath(__file__)), os.W_OK))
+
+if IS_SERVERLESS:
+    db_dir = '/tmp'
+    os.makedirs(db_dir, exist_ok=True)
+    db_path = os.path.join(db_dir, 'traffic.db')
+
+    # If a pre-seeded database exists in instance/traffic.db, copy it to /tmp if not yet present
+    source_db = os.path.join(app.instance_path, 'traffic.db')
+    if os.path.exists(source_db) and not os.path.exists(db_path):
+        import shutil
+        try:
+            shutil.copy2(source_db, db_path)
+        except Exception:
+            pass
+else:
+    try:
+        os.makedirs(app.instance_path, exist_ok=True)
+        db_path = os.path.join(app.instance_path, 'traffic.db')
+    except (PermissionError, OSError):
+        db_path = os.path.join('/tmp', 'traffic.db')
+
 app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
-# Ensure QR codes directory exists
-QR_FOLDER = os.path.join(app.static_folder, 'qr_codes')
-os.makedirs(QR_FOLDER, exist_ok=True)
+# Ensure QR codes directory exists in /tmp/qr_codes for Vercel serverless compatibility
+QR_FOLDER = '/tmp/qr_codes'
+try:
+    os.makedirs(QR_FOLDER, exist_ok=True)
+except (PermissionError, OSError):
+    import tempfile
+    QR_FOLDER = os.path.join(tempfile.gettempdir(), 'qr_codes')
+    os.makedirs(QR_FOLDER, exist_ok=True)
 
 # Pre-defined list of common violation types
 VIOLATION_TYPES = [
@@ -71,8 +98,13 @@ def generate_qr_code(violation_id):
     """
     Dynamically generate a QR code pointing to the public status page.
     The URL uses the host and scheme of the current request.
-    Saved as: static/qr_codes/challan_<violation_id>.png
+    Saved as: /tmp/qr_codes/challan_<violation_id>.png
     """
+    try:
+        os.makedirs(QR_FOLDER, exist_ok=True)
+    except OSError:
+        pass
+
     filename = f"challan_{violation_id}.png"
     filepath = os.path.join(QR_FOLDER, filename)
     status_url = url_for('public_status', id=violation_id, _external=True)
@@ -365,6 +397,29 @@ def challan(id):
 
 
 # ==============================================================================
+# QR CODE SERVING ROUTE
+# ==============================================================================
+@app.route('/qr_codes/<path:filename>')
+@app.route('/static/qr_codes/<path:filename>')
+def serve_qr_code(filename):
+    """
+    Serve dynamically generated QR code images from QR_FOLDER (/tmp/qr_codes).
+    If the requested QR code does not exist in /tmp (e.g., after serverless cold start),
+    it generates it on demand.
+    """
+    filepath = os.path.join(QR_FOLDER, filename)
+    if not os.path.exists(filepath):
+        if filename.startswith('challan_') and filename.endswith('.png'):
+            try:
+                vid_str = filename[len('challan_'):-4]
+                vid = int(vid_str)
+                generate_qr_code(vid)
+            except Exception:
+                pass
+    return send_from_directory(QR_FOLDER, filename)
+
+
+# ==============================================================================
 # PUBLIC ROUTE (ACCESSIBLE WITHOUT LOGIN)
 # ==============================================================================
 @app.route('/status/<int:id>')
@@ -432,6 +487,12 @@ def seed_database():
             db.session.bulk_save_objects(sample_violations)
             db.session.commit()
 
-if __name__ == '__main__':
+
+# Auto-initialize and seed database on startup for both serverless and local environments
+try:
     seed_database()
+except Exception:
+    pass
+
+if __name__ == '__main__':
     app.run(debug=True, host='127.0.0.1', port=5000)
