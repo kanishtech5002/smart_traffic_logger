@@ -106,10 +106,12 @@ def login():
         password = request.form.get('password', '').strip()
 
         # Hardcoded officer credentials for mini-project requirement
-        if username == 'KXNISH' and password == 'traffic123':
+        valid_users = {'officer': 'Officer', 'kxnish': 'KXNISH'}
+        if username.lower() in valid_users and password == 'traffic123':
+            display_name = valid_users[username.lower()]
             session['logged_in'] = True
-            session['officer_name'] = username
-            flash("Logged in successfully as KXNISH.", "success")
+            session['officer_name'] = display_name
+            flash(f"Logged in successfully as {display_name}.", "success")
             next_page = request.args.get('next')
             return redirect(next_page if next_page else url_for('dashboard'))
         else:
